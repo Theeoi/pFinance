@@ -54,21 +54,23 @@ class Database:
         Returns database entries as a DataFrame.
         """
         return pd.read_sql("""
-                SELECT * FROM handelsbanken
+                SELECT * FROM ledger
                 """, self.conn, index_col=['Transaction date', 'Category'],
                            parse_dates=['Transaction date'])
 
     def load_to_database(self, xl_path: str) -> None:
         """
         Read excel-file into database table.
+        Appends new entries through replacing old matching ones.
         """
-        workbook = pd.read_excel(xl_path, header=5, usecols='C,E,G,I',
+        new_data = pd.read_excel(xl_path, header=5, usecols='C,E,G,I',
                                  parse_dates=[0])
-        workbook['Category'] = 'Övrigt'
+        new_data['Category'] = 'Övrigt'
         # Set category for each expense here!
-        workbook = workbook.set_index(['Transaction date', 'Category'])
-        workbook.to_sql(name="handelsbanken", con=self.conn, schema=DB_SCHEMA,
-                        if_exists='append', index=True,
+        new_data = new_data.set_index(['Transaction date', 'Category'])
+
+        new_data.to_sql(name="ledger", con=self.conn, schema=DB_SCHEMA,
+                        if_exists='replace', index=True,
                         index_label=['Transaction date', 'Category'])
         self.conn.commit()
 
