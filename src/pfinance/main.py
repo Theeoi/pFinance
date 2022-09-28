@@ -32,17 +32,7 @@ class Database:
         Return a connection to the database. Create a new database if is does
         not exist.
         """
-        if not self.check_db():
-            # If database not exist -> Create with template
-            print("Creating new database")
-            with open(DB_SCHEMA, 'r', encoding='utf8') as schema_template:
-                schema = schema_template.read()
-                conn = sqlite3.connect(self.path)
-                conn.executescript(schema)
-        else:  # Else simply create the connection
-            conn = sqlite3.connect(self.path)
-
-        return conn
+        return sqlite3.connect(self.path)
 
     def check_db(self) -> bool:
         """
