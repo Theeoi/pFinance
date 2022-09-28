@@ -6,7 +6,7 @@ import sqlite3
 import os
 import pandas as pd
 
-CARD_DB = 'database/card.db'
+DATABASE = 'database/database.db'
 DB_SCHEMA = 'database/schema.sql'
 
 
@@ -79,13 +79,12 @@ def main():
     """
     Entrypoint to module.
     """
-    carddata = Database(CARD_DB)
-    print(carddata)
+    db = Database(DATABASE)
 
     # carddata.load_to_database(
-    #     "/home/theodorb/Downloads/kontotransactionlist.ods")
+    #     "/home/theodorb/Downloads/kontotransactionlist_0828-0928.ods")
 
-    print(carddata.read_database())
+    print(f"Current database:\n{db.read_database()}")
 
     # Closing all active databases
     for db_instance in Database.instances:
