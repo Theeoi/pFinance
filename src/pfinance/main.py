@@ -49,9 +49,9 @@ class Database:
         """
         return os.path.exists(self.path)
 
-    def read_database(self) -> str:
+    def read_database(self) -> pd.DataFrame:
         """
-        Returns string represtention of the database entries.
+        Returns database entries as a DataFrame.
         """
         return pd.read_sql("""
                 SELECT * FROM handelsbanken
