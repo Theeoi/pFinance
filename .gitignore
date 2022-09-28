@@ -5,5 +5,5 @@ build/
 .direnv/
 .envrc
 
-database/
-!database/schema.sql
+database/*
+!*/database/schema.sql
