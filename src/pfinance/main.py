@@ -50,14 +50,18 @@ class Database:
         """
         return os.path.exists(self.path)
 
-    def read_database(self) -> pd.DataFrame:
+    def read_database(self) -> pd.DataFrame | None:
         """
         Returns database entries as a DataFrame.
+        If database is empty or does not exist return None.
         """
-        return pd.read_sql("""
-                SELECT * FROM ledger
-                """, self.conn, index_col=['Transaction date', 'Category'],
-                           parse_dates=['Transaction date'])
+        try:
+            return pd.read_sql("""
+                    SELECT * FROM ledger
+                    """, self.conn, index_col=['Transaction date', 'Category'],
+                               parse_dates=['Transaction date'])
+        except KeyError:
+            return None
 
     def load_to_database(self, xl_path: str) -> None:
         """
