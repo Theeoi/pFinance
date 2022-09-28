@@ -4,6 +4,7 @@ Main source file of pfinance.
 """
 import sqlite3
 import os
+import argparse
 import pandas as pd
 
 DATABASE = 'database/database.db'
@@ -75,16 +76,47 @@ class Database:
         self.conn.commit()
 
 
+def get_cliargs() -> dict:
+    """
+    Captures cli input and returns a dictionary of the input.
+    Modify this function to add additional arguments.
+    """
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-s", "--show", action='store_true',
+                        help="Shows the current data in database.")
+
+    parser.add_argument("-l", "--load", type=str, nargs=1, metavar="file_path",
+                        default=None,
+                        help="Loads the specified .ods file to sql database.")
+
+    return vars(parser.parse_args())
+
+
 def main():
     """
     Entrypoint to module.
     """
     db = Database(DATABASE)
 
-    # carddata.load_to_database(
-    #     "/home/theodorb/Downloads/kontotransactionlist_0828-0928.ods")
+    args: dict = get_cliargs()
 
-    print(f"Current database:\n{db.read_database()}")
+    if args['show'] is not False:
+        print(f"Current database:\n{db.read_database()}")
+
+    if args['load'] is not None:
+        file_path = args['load'][0]
+        if not os.path.exists(file_path):
+            raise ValueError(f"""
+                    ValueError: Invalid file path/name. Path {file_path}
+                    does not exist.
+                    """)
+        if not file_path.endswith('.ods'):
+            raise ValueError(f"""
+                    ValueError: Invalid file format. {file_path} must be a
+                    .ods file.
+                    """)
+        db.load_to_database(file_path)
 
     # Closing all active databases
     for db_instance in Database.instances:
