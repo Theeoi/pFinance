@@ -52,6 +52,8 @@ class Database:
                                parse_dates=['Transaction date'])
         except KeyError:
             return None
+        except DatabaseError:
+            return None
 
     def load_to_database(self, xl_path: str) -> None:
         """
