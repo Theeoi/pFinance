@@ -56,6 +56,7 @@ To do:
 - [ ] Add a way to select a date-span to visualize.
 
 Room for improvement:
+- Add proper testing with pytest.
 - Expand available input data options. Currently only Handelsbanken .ods
   files.
 - Develop a TUI/GUI to complement the CLI.
