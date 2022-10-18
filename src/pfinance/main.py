@@ -38,6 +38,7 @@ class Database:
     def check_db(self) -> bool:
         """
         Check if database file exists.
+        Returns True if it exists.
         """
         return os.path.exists(self.path)
 
