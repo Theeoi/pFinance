@@ -6,6 +6,7 @@ import sqlite3
 import os
 import argparse
 import pandas as pd
+from pandas.errors import DatabaseError
 
 DATABASE = 'database/database.db'
 DB_SCHEMA = 'database/schema.sql'
@@ -60,13 +61,23 @@ class Database:
         Read excel-file into database table.
         Appends new entries through replacing old matching ones.
         """
-        new_data = pd.read_excel(xl_path, header=5, usecols='C,E,G,I',
-                                 parse_dates=[0])
-        new_data['Category'] = 'Övrigt'
+        input_data = pd.read_excel(xl_path, header=5, usecols='C,E,G,I',
+                                   parse_dates=[0])
+        input_data['Category'] = 'Övrigt'
         # Set category for each expense here!
-        new_data = new_data.set_index(['Transaction date', 'Category'])
+        input_data = input_data.set_index(['Transaction date', 'Category'])
 
-        new_data.to_sql(name="ledger", con=self.conn, schema=DB_SCHEMA,
+        if not self.check_db():
+            agg_data: pd.DataFrame = input_data
+        else:
+            current_db: pd.DataFrame = self.read_database()
+            agg_data = pd.concat([current_db, input_data])
+            agg_data.drop_duplicates(inplace=True)
+
+        agg_data.sort_index(level='Transaction date', inplace=True,
+                            ascending=False)
+
+        agg_data.to_sql(name="ledger", con=self.conn, schema=DB_SCHEMA,
                         if_exists='replace', index=True,
                         index_label=['Transaction date', 'Category'])
         self.conn.commit()
