@@ -48,13 +48,16 @@ This project is in progress but is sporadically worked on during spare time.
 ### Roadmap
 
 To do:
-- Identify overlap between database and input data. Only add new transactions
+- [x] Store input data in SQLite database.
+- [ ] Identify overlap between database and input data. Only add new transactions
   to the database.
-- Add categorization to input data using some sort of mapping.
-- Visualize the database with a graph.
-- Add a way to select a date-span to visualize.
+- [ ] Add categorization to input data using some sort of mapping.
+- [ ] Visualize the database with a graph.
+- [ ] Add a way to select a date-span to visualize.
 
 Room for improvement:
+- Expand available input data options. Currently only Handelsbanken .ods
+  files.
 - Develop a TUI/GUI to complement the CLI.
 
 ## Contact
