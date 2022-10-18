@@ -4,9 +4,10 @@ Main source file of pfinance.
 """
 import sqlite3
 import os
+import argparse
 import pandas as pd
 
-CARD_DB = 'database/card.db'
+DATABASE = 'database/database.db'
 DB_SCHEMA = 'database/schema.sql'
 
 
@@ -31,17 +32,7 @@ class Database:
         Return a connection to the database. Create a new database if is does
         not exist.
         """
-        if not self.check_db():
-            # If database not exist -> Create with template
-            print("Creating new database")
-            with open(DB_SCHEMA, 'r', encoding='utf8') as schema_template:
-                schema = schema_template.read()
-                conn = sqlite3.connect(self.path)
-                conn.executescript(schema)
-        else:  # Else simply create the connection
-            conn = sqlite3.connect(self.path)
-
-        return conn
+        return sqlite3.connect(self.path)
 
     def check_db(self) -> bool:
         """
@@ -49,41 +40,77 @@ class Database:
         """
         return os.path.exists(self.path)
 
-    def read_database(self) -> str:
+    def read_database(self) -> pd.DataFrame | None:
         """
-        Returns string represtention of the database entries.
+        Returns database entries as a DataFrame.
+        If database is empty or does not exist return None.
         """
-        return pd.read_sql("""
-                SELECT * FROM handelsbanken
-                """, self.conn, index_col=['Transaction date', 'Category'],
-                           parse_dates=['Transaction date'])
+        try:
+            return pd.read_sql("""
+                    SELECT * FROM ledger
+                    """, self.conn, index_col=['Transaction date', 'Category'],
+                               parse_dates=['Transaction date'])
+        except KeyError:
+            return None
 
     def load_to_database(self, xl_path: str) -> None:
         """
         Read excel-file into database table.
+        Appends new entries through replacing old matching ones.
         """
-        workbook = pd.read_excel(xl_path, header=5, usecols='C,E,G,I',
+        new_data = pd.read_excel(xl_path, header=5, usecols='C,E,G,I',
                                  parse_dates=[0])
-        workbook['Category'] = 'Övrigt'
+        new_data['Category'] = 'Övrigt'
         # Set category for each expense here!
-        workbook = workbook.set_index(['Transaction date', 'Category'])
-        workbook.to_sql(name="handelsbanken", con=self.conn, schema=DB_SCHEMA,
-                        if_exists='append', index=True,
+        new_data = new_data.set_index(['Transaction date', 'Category'])
+
+        new_data.to_sql(name="ledger", con=self.conn, schema=DB_SCHEMA,
+                        if_exists='replace', index=True,
                         index_label=['Transaction date', 'Category'])
         self.conn.commit()
+
+
+def get_cliargs() -> dict:
+    """
+    Captures cli input and returns a dictionary of the input.
+    Modify this function to add additional arguments.
+    """
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-s", "--show", action='store_true',
+                        help="Shows the current data in database.")
+
+    parser.add_argument("-l", "--load", type=str, nargs=1, metavar="file_path",
+                        default=None,
+                        help="Loads the specified .ods file to sql database.")
+
+    return vars(parser.parse_args())
 
 
 def main():
     """
     Entrypoint to module.
     """
-    carddata = Database(CARD_DB)
-    print(carddata)
+    db = Database(DATABASE)
 
-    # carddata.load_to_database(
-    #     "/home/theodorb/Downloads/kontotransactionlist.ods")
+    args: dict = get_cliargs()
 
-    print(carddata.read_database())
+    if args['show'] is not False:
+        print(f"Current database:\n{db.read_database()}")
+
+    if args['load'] is not None:
+        file_path = args['load'][0]
+        if not os.path.exists(file_path):
+            raise ValueError(f"""
+                    ValueError: Invalid file path/name. Path {file_path}
+                    does not exist.
+                    """)
+        if not file_path.endswith('.ods'):
+            raise ValueError(f"""
+                    ValueError: Invalid file format. {file_path} must be a
+                    .ods file.
+                    """)
+        db.load_to_database(file_path)
 
     # Closing all active databases
     for db_instance in Database.instances:
