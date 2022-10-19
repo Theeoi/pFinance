@@ -6,7 +6,6 @@ import sqlite3
 import os
 import argparse
 import pandas as pd
-from pandas.errors import DatabaseError
 
 DATABASE = 'database/database.db'
 DB_SCHEMA = 'database/schema.sql'
@@ -54,7 +53,7 @@ class Database:
                                parse_dates=['Transaction date'])
         except KeyError:
             return None
-        except DatabaseError:
+        except pd.errors.DatabaseError:
             return None
 
     def load_to_database(self, xl_path: str) -> None:
@@ -68,11 +67,11 @@ class Database:
         # Set category for each expense here!
         input_data = input_data.set_index(['Transaction date', 'Category'])
 
-        if not self.check_db():
+        current_db: pd.DataFrame | None = self.read_database()
+        if current_db is None:
             agg_data: pd.DataFrame = input_data
         else:
-            current_db: pd.DataFrame = self.read_database()
-            agg_data = pd.concat([current_db, input_data])
+            agg_data = current_db.combine_first(input_data)
             agg_data.drop_duplicates(inplace=True)
 
         agg_data.sort_index(level='Transaction date', inplace=True,
