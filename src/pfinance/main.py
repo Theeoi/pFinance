@@ -2,9 +2,10 @@
 """
 Main source file of pfinance.
 """
-import sqlite3
-import os
 import argparse
+import os
+import sqlite3
+
 import pandas as pd
 
 DATABASE = 'database/database.db'
