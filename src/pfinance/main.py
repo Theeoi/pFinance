@@ -137,6 +137,23 @@ def get_cliargs() -> dict:
     return vars(parser.parse_args())
 
 
+def get_cliargs() -> dict:
+    """
+    Captures cli input and returns a dictionary of the input.
+    Modify this function to add additional arguments.
+    """
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-s", "--show", action='store_true',
+                        help="Shows the current data in database.")
+
+    parser.add_argument("-l", "--load", type=str, nargs=1, metavar="file_path",
+                        default=None,
+                        help="Loads the specified .ods file to sql database.")
+
+    return vars(parser.parse_args())
+
+
 def main():
     """
     Entrypoint to module.
