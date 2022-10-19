@@ -1,4 +1,4 @@
-CREATE TABLE ledger(
+CREATE TABLE table_name(
     trans date,
     cat text,
     desc text,
