@@ -126,7 +126,10 @@ def main():
     args: dict = get_cliargs()
 
     if args['show'] is not False:
-        print(f"Current database:\n{db.read_database()}")
+        db_tables = db.read_database()
+        print("Current database:")
+        for table in db_tables.items():
+            print(f"{table}\n")
 
     if args['load'] is not None:
         table_name = args['load'][0]
