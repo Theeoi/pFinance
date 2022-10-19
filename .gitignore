@@ -4,6 +4,7 @@ build/
 
 .direnv/
 .envrc
+.coverage
 
 database/*
 !*/database/schema.sql

@@ -41,6 +41,9 @@ The project is built with python 3.10 typehinting in mind and should be
 formatted according to PEP8. I personally use mypy and autopep8 to check my
 code.
 
+Testing is done with pytest and pytest-cov. When testing the code remember to
+install the pFinance package with: `pip install -e .`
+
 ## Project Status
 
 This project is in progress but is sporadically worked on during spare time.
