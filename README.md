@@ -59,7 +59,6 @@ Room for improvement:
 - Add proper testing with pytest.
 - Expand available input data options. Currently only Handelsbanken .ods
   files.
-- Add way to revert/clear database of recent/all loads.
 - Develop a TUI/GUI to complement the CLI.
 
 ## Contact
