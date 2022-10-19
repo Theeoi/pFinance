@@ -96,6 +96,21 @@ class Database:
                         index_label=['Transaction date', 'Category'])
         self.conn.commit()
 
+    def drop_table(self, table: str) -> None:
+        """
+        Drop the given {table} from the sql database.
+        """
+        query_delete = f"""
+        DROP TABLE {table}
+        """
+        try:
+            self.curr.execute(query_delete)
+            self.conn.commit()
+        except sqlite3.OperationalError:
+            print(
+                f"""There is no table named '{table}' in {DATABASE}."""
+            )
+
 
 def get_cliargs() -> dict:
     """
@@ -112,6 +127,11 @@ def get_cliargs() -> dict:
                         default=None,
                         help="""
                         Loads the specified .ods file to specified table in sql database.
+                        """)
+    parser.add_argument("-d", "--drop", type=str, nargs=1,
+                        metavar="table_name", default=None,
+                        help="""
+                        Drops the specified table from the sql database.
                         """)
 
     return vars(parser.parse_args())
@@ -145,6 +165,10 @@ def main():
                     .ods file.
                     """)
         db.load_to_database(table_name, file_path)
+
+    if args['drop'] is not None:
+        table_name = args['drop'][0]
+        db.drop_table(table_name)
 
     # Closing all active databases
     for db_instance in Database.instances:
