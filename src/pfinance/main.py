@@ -37,6 +37,7 @@ class Database:
     def check_db(self) -> bool:
         """
         Check if database file exists.
+        Returns True if it exists.
         """
         return os.path.exists(self.path)
 
@@ -52,19 +53,31 @@ class Database:
                                parse_dates=['Transaction date'])
         except KeyError:
             return None
+        except pd.errors.DatabaseError:
+            return None
 
     def load_to_database(self, xl_path: str) -> None:
         """
         Read excel-file into database table.
         Appends new entries through replacing old matching ones.
         """
-        new_data = pd.read_excel(xl_path, header=5, usecols='C,E,G,I',
-                                 parse_dates=[0])
-        new_data['Category'] = 'Övrigt'
+        input_data = pd.read_excel(xl_path, header=5, usecols='C,E,G,I',
+                                   parse_dates=[0])
+        input_data['Category'] = 'Övrigt'
         # Set category for each expense here!
-        new_data = new_data.set_index(['Transaction date', 'Category'])
+        input_data = input_data.set_index(['Transaction date', 'Category'])
 
-        new_data.to_sql(name="ledger", con=self.conn, schema=DB_SCHEMA,
+        current_db: pd.DataFrame | None = self.read_database()
+        if current_db is None:
+            agg_data: pd.DataFrame = input_data
+        else:
+            agg_data = current_db.combine_first(input_data)
+            agg_data.drop_duplicates(inplace=True)
+
+        agg_data.sort_index(level='Transaction date', inplace=True,
+                            ascending=False)
+
+        agg_data.to_sql(name="ledger", con=self.conn, schema=DB_SCHEMA,
                         if_exists='replace', index=True,
                         index_label=['Transaction date', 'Category'])
         self.conn.commit()
